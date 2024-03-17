@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">MAD Coursework</string>
+    <string name="title_activity_guess_country">GuessCountryActivity</string>
+    <string name="title_activity_guess_hints">GuessHintsActivity</string>
+    <string name="title_activity_guess_flag">GuessFlagActivity</string>
+    <string name="title_activity_advanced_level">AdvancedLevelActivity</string>
+</resources>
