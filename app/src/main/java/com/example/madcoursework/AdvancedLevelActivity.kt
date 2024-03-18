@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -183,6 +184,40 @@ private fun AdvancedLevelScreen(
                 }
             }
         }
+        if (orientation == 2) {
+            LazyRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.75f),
+            ) {
+                item {
+                    FlagContainer(
+                        randomFlagID = randomFlagID1,
+                        guess = guessCountry1,
+                        isAnswerCorrect = isAnswer1Correct.value,
+                        onValueGuess = { guessCountry1 = it },
+                        submitCounter = submitCounter.intValue,
+                        correctAnswer = randomSelectedCountry1
+                    )
+                    FlagContainer(
+                        randomFlagID = randomFlagID2,
+                        guess = guessCountry2,
+                        isAnswerCorrect = isAnswer2Correct.value,
+                        onValueGuess = { guessCountry2 = it },
+                        submitCounter = submitCounter.intValue,
+                        correctAnswer = randomSelectedCountry2
+                    )
+                    FlagContainer(
+                        randomFlagID = randomFlagID3,
+                        guess = guessCountry3,
+                        isAnswerCorrect = isAnswer3Correct.value,
+                        onValueGuess = { guessCountry3 = it },
+                        submitCounter = submitCounter.intValue,
+                        correctAnswer = randomSelectedCountry3
+                    )
+                }
+            }
+        }
         Box(
             modifier = Modifier
                 .fillMaxHeight(),
@@ -266,34 +301,72 @@ private fun FlagContainer(
     if (isAnswerCorrect) isEnabled = false
     if (submitCounter > 3) isEnabled = false
 
-    Box(
-        modifier = Modifier
-            .fillMaxWidth(0.7f)
-            .size(160.dp), contentAlignment = Alignment.Center
-    ) {
-        Image(
-            painter = painterResource(id = randomFlagID),
-            contentDescription = "description",
-            modifier = Modifier.padding(top = 15.dp),
-            contentScale = ContentScale.FillHeight,
+    if (LocalConfiguration.current.orientation == 1) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(0.7f)
+                .size(160.dp), contentAlignment = Alignment.Center
+        ) {
+            Image(
+                painter = painterResource(id = randomFlagID),
+                contentDescription = "description",
+                modifier = Modifier.padding(top = 15.dp),
+                contentScale = ContentScale.FillHeight,
+            )
+        }
+        Text(
+            text = guess, modifier = Modifier.padding(vertical = 10.dp)
         )
+        if (submitCounter > 3 && !isAnswerCorrect)
+            Text(text = correctAnswer, color = Color(0xFF2196F3))
+        TextField(
+            value = guess,
+            onValueChange = {
+                onValueGuess(it)
+            },
+            label = { Text(text = "Enter your guess") },
+            modifier = Modifier.padding(bottom = 30.dp),
+            enabled = isEnabled,
+            textStyle = TextStyle(
+                fontSize = 18.sp,
+                color = textFieldColor
+            )
+        )
+    } else {
+        LazyColumn(modifier = Modifier.padding(end = 25.dp)) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .size(width = 280.dp, height = 180.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Image(
+                        painter = painterResource(id = randomFlagID),
+                        contentDescription = "description",
+                        modifier = Modifier.padding(top = 15.dp),
+                        contentScale = ContentScale.FillHeight,
+                    )
+                }
+                Text(
+                    text = guess, modifier = Modifier.padding(vertical = 10.dp)
+                )
+                if (submitCounter > 3 && !isAnswerCorrect)
+                    Text(text = correctAnswer, color = Color(0xFF2196F3))
+                TextField(
+                    value = guess,
+                    onValueChange = {
+                        onValueGuess(it)
+                    },
+                    label = { Text(text = "Enter your guess") },
+                    modifier = Modifier.padding(bottom = 30.dp),
+                    enabled = isEnabled,
+                    textStyle = TextStyle(
+                        fontSize = 18.sp,
+                        color = textFieldColor
+                    )
+                )
+            }
+        }
     }
-    Text(
-        text = guess, modifier = Modifier.padding(vertical = 10.dp)
-    )
-    if (submitCounter > 3 && !isAnswerCorrect)
-        Text(text = correctAnswer, color = Color(0xFF2196F3))
-    TextField(
-        value = guess,
-        onValueChange = {
-            onValueGuess(it)
-        },
-        label = { Text(text = "Enter your guess") },
-        modifier = Modifier.padding(bottom = 30.dp),
-        enabled = isEnabled,
-        textStyle = TextStyle(
-            fontSize = 18.sp,
-            color = textFieldColor
-        )
-    )
 }
