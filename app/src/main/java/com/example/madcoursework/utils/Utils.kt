@@ -21,7 +21,6 @@ fun convertJsonStringToMap(jsonString: String): Map<String, String> {
         val lowerCaseKey = key.lowercase()
         map[lowerCaseKey] = jsonObject.getString(key)
     }
-    println("THIS IS MAP: $map")
     return map
 }
 

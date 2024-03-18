@@ -7,12 +7,12 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -46,8 +47,7 @@ class AdvancedLevelActivity : ComponentActivity() {
             MADCourseworkTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                    modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
                 ) {
                     val extras = intent.extras
                     val countryJsonString: String
@@ -62,11 +62,8 @@ class AdvancedLevelActivity : ComponentActivity() {
 
                     AdvancedLevelScreen(
                         modifier = Modifier.padding(
-                            horizontal = 20.dp,
-                            vertical = 15.dp
-                        ),
-                        countryMap = countryMap,
-                        listOfFlagIDs = listOfFlagIDs
+                            horizontal = 20.dp, vertical = 15.dp
+                        ), countryMap = countryMap, listOfFlagIDs = listOfFlagIDs
                     )
                 }
             }
@@ -76,28 +73,63 @@ class AdvancedLevelActivity : ComponentActivity() {
 
 @Composable
 private fun AdvancedLevelScreen(
-    modifier: Modifier,
-    countryMap: Map<String, String>,
-    listOfFlagIDs: List<Int>
+    modifier: Modifier, countryMap: Map<String, String>, listOfFlagIDs: List<Int>
 ) {
     val orientation = LocalConfiguration.current.orientation
 
-    var randomFlagID by rememberSaveable { mutableIntStateOf(0) } // THE RANDOM FLAG ID OF THE RANDOM FLAG
-    var randomFlagKey by rememberSaveable { mutableStateOf<String?>(null) } // THE RANDOM FLAG KEY -> i.e. => lk
+    var randomFlagID1 by rememberSaveable { mutableIntStateOf(0) } // THE RANDOM FLAG ID OF THE RANDOM FLAG
+    var randomFlagKey1 by rememberSaveable { mutableStateOf<String?>(null) } // THE RANDOM FLAG KEY -> i.e. => lk
+    var randomFlagID2 by rememberSaveable { mutableIntStateOf(0) }
+    var randomFlagKey2 by rememberSaveable { mutableStateOf<String?>(null) }
+    var randomFlagID3 by rememberSaveable { mutableIntStateOf(0) }
+    var randomFlagKey3 by rememberSaveable { mutableStateOf<String?>(null) }
 
-    var randomSelectedCountry by rememberSaveable { mutableStateOf("") }
+    var randomSelectedCountry1 by rememberSaveable { mutableStateOf("") }
+    var randomSelectedCountry2 by rememberSaveable { mutableStateOf("") }
+    var randomSelectedCountry3 by rememberSaveable { mutableStateOf("") }
 
-    if (randomFlagID == 0) {
-        val randomIndex = Random.nextInt(listOfFlagIDs.size)
-        randomFlagID = listOfFlagIDs[randomIndex]
-        randomFlagKey = countryMap.entries.elementAt(randomIndex).key
-        randomSelectedCountry = countryMap[randomFlagKey]!!
+    var guessCountry1: String by rememberSaveable { mutableStateOf("") }
+    var guessCountry2: String by rememberSaveable { mutableStateOf("") }
+    var guessCountry3: String by rememberSaveable { mutableStateOf("") }
+
+    var submitText by rememberSaveable { mutableStateOf("Submit") }
+    val submitCounter = rememberSaveable { mutableIntStateOf(1) }
+
+    val isAnswer1Correct = rememberSaveable { mutableStateOf(false) }
+    val isAnswer2Correct = rememberSaveable { mutableStateOf(false) }
+    val isAnswer3Correct = rememberSaveable { mutableStateOf(false) }
+
+    if (randomFlagID1 == 0) {
+        var randomIndex1: Int
+        var randomIndex2: Int
+        var randomIndex3: Int
+
+        while (true) {
+            randomIndex1 = Random.nextInt(listOfFlagIDs.size)
+            randomIndex2 = Random.nextInt(listOfFlagIDs.size)
+            randomIndex3 = Random.nextInt(listOfFlagIDs.size)
+            if ((randomIndex1 != randomIndex2) && (randomIndex1 != randomIndex3) && (randomIndex2 != randomIndex3)) break
+        }
+
+        randomFlagID1 = listOfFlagIDs[randomIndex1]
+        randomFlagKey1 = countryMap.entries.elementAt(randomIndex1).key
+        randomSelectedCountry1 = countryMap[randomFlagKey1]!!
+
+        randomFlagID2 = listOfFlagIDs[randomIndex2]
+        randomFlagKey2 = countryMap.entries.elementAt(randomIndex2).key
+        randomSelectedCountry2 = countryMap[randomFlagKey2]!!
+
+        randomFlagID3 = listOfFlagIDs[randomIndex3]
+        randomFlagKey3 = countryMap.entries.elementAt(randomIndex3).key
+        randomSelectedCountry3 = countryMap[randomFlagKey3]!!
     }
 
+    println("COUNTRY 1 $randomSelectedCountry1")
+    println("COUNTRY 2 $randomSelectedCountry2")
+    println("COUNTRY 3 $randomSelectedCountry3")
 
     Column(
-        modifier = modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier = modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = "Advanced Level",
@@ -107,16 +139,38 @@ private fun AdvancedLevelScreen(
             textAlign = TextAlign.Left
         )
         if (orientation == 1) {
-            Column {
-                FlagContainer(
-                    randomFlagID = randomFlagID,
-                )
-                FlagContainer(
-                    randomFlagID = randomFlagID,
-                )
-                FlagContainer(
-                    randomFlagID = randomFlagID,
-                )
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.9f),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                item {
+                    FlagContainer(
+                        randomFlagID = randomFlagID1,
+                        guess = guessCountry1,
+                        isAnswerCorrect = isAnswer1Correct.value,
+                        onValueGuess = { guessCountry1 = it },
+                        submitCounter = submitCounter.intValue,
+                        correctAnswer = randomSelectedCountry1
+                    )
+                    FlagContainer(
+                        randomFlagID = randomFlagID2,
+                        guess = guessCountry2,
+                        isAnswerCorrect = isAnswer2Correct.value,
+                        onValueGuess = { guessCountry2 = it },
+                        submitCounter = submitCounter.intValue,
+                        correctAnswer = randomSelectedCountry2
+                    )
+                    FlagContainer(
+                        randomFlagID = randomFlagID3,
+                        guess = guessCountry3,
+                        isAnswerCorrect = isAnswer3Correct.value,
+                        onValueGuess = { guessCountry3 = it },
+                        submitCounter = submitCounter.intValue,
+                        correctAnswer = randomSelectedCountry3
+                    )
+                }
             }
         }
         Box(
@@ -124,26 +178,83 @@ private fun AdvancedLevelScreen(
                 .fillMaxHeight(),
             contentAlignment = Alignment.BottomCenter
         ) {
-            Button(
-                onClick = { /*TODO*/ },
-                modifier = Modifier
-                    .fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-            ) {
-                Text(text = "Submit", fontSize = 17.sp)
+            if (isAnswer1Correct.value && isAnswer2Correct.value && isAnswer3Correct.value)
+                submitText = "Next"
+            if (submitCounter.intValue > 3) {
+                submitText = "Next"
+            }
+            Column {
+                if (submitCounter.intValue > 3) {
+                    if (isAnswer1Correct.value && isAnswer2Correct.value && isAnswer3Correct.value)
+                        Text(text = "CORRECT!", color = Color.Green)
+                    else
+                        Text(text = "WRONG!", color = Color.Red)
+                }
+
+                Button(
+                    onClick = {
+                        if (submitText == "Submit") {
+                            if (guessCountry1.lowercase() == randomSelectedCountry1.lowercase()) {
+                                isAnswer1Correct.value = true
+                            }
+                            if (guessCountry2.lowercase() == randomSelectedCountry2.lowercase()) {
+                                isAnswer2Correct.value = true
+                            }
+                            if (guessCountry3.lowercase() == randomSelectedCountry3.lowercase()) {
+                                isAnswer3Correct.value = true
+                            }
+                            submitCounter.intValue++
+                        } else {
+                            submitCounter.intValue = 1
+                            submitText = "Submit"
+                            randomFlagID1 = 0
+
+                            guessCountry1 = ""
+                            guessCountry2 = ""
+                            guessCountry3 = ""
+
+                            isAnswer1Correct.value = false
+                            isAnswer2Correct.value = false
+                            isAnswer3Correct.value = false
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                ) {
+                    Text(text = submitText, fontSize = 17.sp)
+                }
             }
         }
     }
 }
 
-
 @Composable
-private fun FlagContainer(randomFlagID: Int) {
+private fun FlagContainer(
+    randomFlagID: Int,
+    guess: String,
+    isAnswerCorrect: Boolean,
+    onValueGuess: (String) -> Unit,
+    submitCounter: Int,
+    correctAnswer: String
+) {
+    var textFieldColor: Color = Color.White
+    var isEnabled by rememberSaveable { mutableStateOf(true) }
+
+    if (submitCounter == 1) isEnabled = true
+
+    if (submitCounter > 1) {
+        textFieldColor =
+            if (isAnswerCorrect) Color.Green
+            else Color.Red
+    }
+
+    if (isAnswerCorrect) isEnabled = false
+    if (submitCounter > 3) isEnabled = false
+
     Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .size(180.dp),
-        contentAlignment = Alignment.Center
+            .fillMaxWidth(0.7f)
+            .size(160.dp), contentAlignment = Alignment.Center
     ) {
         Image(
             painter = painterResource(id = randomFlagID),
@@ -152,13 +263,22 @@ private fun FlagContainer(randomFlagID: Int) {
             contentScale = ContentScale.FillHeight,
         )
     }
-    Row {
-        TextField(
-            value = "",
-            onValueChange = { },
-            label = { Text(text = "Enter your guess") },
-            modifier = Modifier.weight(1f)
+    Text(
+        text = guess, modifier = Modifier.padding(vertical = 10.dp)
+    )
+    if (submitCounter > 3 && !isAnswerCorrect)
+        Text(text = correctAnswer, color = Color(0xFF2196F3),)
+    TextField(
+        value = guess,
+        onValueChange = {
+            onValueGuess(it)
+        },
+        label = { Text(text = "Enter your guess") },
+        modifier = Modifier.padding(bottom = 30.dp),
+        enabled = isEnabled,
+        textStyle = TextStyle(
+            fontSize = 18.sp,
+            color = textFieldColor
         )
-        Text(text = "", modifier = Modifier.weight(1f))
-    }
+    )
 }
