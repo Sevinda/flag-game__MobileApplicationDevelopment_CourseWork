@@ -7,6 +7,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -99,6 +100,8 @@ private fun AdvancedLevelScreen(
     val isAnswer2Correct = rememberSaveable { mutableStateOf(false) }
     val isAnswer3Correct = rememberSaveable { mutableStateOf(false) }
 
+    var pointCounter = rememberSaveable { mutableIntStateOf(0) }
+
     if (randomFlagID1 == 0) {
         var randomIndex1: Int
         var randomIndex2: Int
@@ -131,13 +134,20 @@ private fun AdvancedLevelScreen(
     Column(
         modifier = modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = "Advanced Level",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Left
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Advanced Level",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Left,
+                modifier = Modifier.weight(1f)
+            )
+            Text(text = "${pointCounter.intValue}/3")
+        }
         if (orientation == 1) {
             LazyColumn(
                 modifier = Modifier
@@ -194,18 +204,23 @@ private fun AdvancedLevelScreen(
                 Button(
                     onClick = {
                         if (submitText == "Submit") {
+                            pointCounter.intValue = 0
                             if (guessCountry1.lowercase() == randomSelectedCountry1.lowercase()) {
                                 isAnswer1Correct.value = true
+                                pointCounter.intValue += 1
                             }
                             if (guessCountry2.lowercase() == randomSelectedCountry2.lowercase()) {
                                 isAnswer2Correct.value = true
+                                pointCounter.intValue += 1
                             }
                             if (guessCountry3.lowercase() == randomSelectedCountry3.lowercase()) {
                                 isAnswer3Correct.value = true
+                                pointCounter.intValue += 1
                             }
                             submitCounter.intValue++
                         } else {
                             submitCounter.intValue = 1
+                            pointCounter.intValue = 0
                             submitText = "Submit"
                             randomFlagID1 = 0
 
@@ -267,7 +282,7 @@ private fun FlagContainer(
         text = guess, modifier = Modifier.padding(vertical = 10.dp)
     )
     if (submitCounter > 3 && !isAnswerCorrect)
-        Text(text = correctAnswer, color = Color(0xFF2196F3),)
+        Text(text = correctAnswer, color = Color(0xFF2196F3))
     TextField(
         value = guess,
         onValueChange = {
