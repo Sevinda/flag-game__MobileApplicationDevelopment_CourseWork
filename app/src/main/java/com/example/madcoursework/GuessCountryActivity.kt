@@ -17,11 +17,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -38,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.madcoursework.ui.theme.MADCourseworkTheme
 import com.example.madcoursework.utils.convertJsonStringToMap
+import kotlinx.coroutines.delay
 import kotlin.random.Random
 
 class GuessCountryActivity : ComponentActivity() {
@@ -53,18 +57,21 @@ class GuessCountryActivity : ComponentActivity() {
                     val countryJsonString: String
                     var countryMap: Map<String, String> = emptyMap()
                     var listOfFlagIDs: List<Int> = emptyList()
+                    var isChecked = false
                     if (extras != null) {
                         countryJsonString = extras.getString("countryJsonStringData").toString()
                         countryMap = convertJsonStringToMap(countryJsonString)
                         listOfFlagIDs =
                             extras.getIntegerArrayList("listOfFlagIDsIntentData") as List<Int>
+                        isChecked = extras.getBoolean("isChecked")
                     }
                     GuessCountryScreen(
                         modifier = Modifier.padding(
-                            horizontal = 20.dp, vertical = 15.dp
+                            horizontal = 20.dp, vertical = 5.dp
                         ),
                         countryMap = countryMap,
-                        listOfFlagIDs = listOfFlagIDs
+                        listOfFlagIDs = listOfFlagIDs,
+                        isChecked = isChecked
                     )
                 }
             }
@@ -76,7 +83,8 @@ class GuessCountryActivity : ComponentActivity() {
 private fun GuessCountryScreen(
     modifier: Modifier,
     countryMap: Map<String, String>,
-    listOfFlagIDs: List<Int>
+    listOfFlagIDs: List<Int>,
+    isChecked: Boolean
 ) {
     val orientation = LocalConfiguration.current.orientation
 
@@ -97,7 +105,46 @@ private fun GuessCountryScreen(
         randomFlagKey = countryMap.entries.elementAt(randomIndex).key
     }
 
+    // AN INNER FUNCTION TO HANDLE ON SUBMIT EITHER WHEN THE BUTTON IS CLICKED OR THE TIME RUNS OUT
+    fun handleOnSubmit() {
+        correctCountry = countryMap[randomFlagKey].toString()
+        isButtonsEnabled = false
+        setIsCorrect =
+            if (countryMap.entries.find { it.value == userSelectedCountry }?.key == randomFlagKey) " - CORRECT!" else " - WRONG!"
+        println("USER SELECTED COUNTRY: $userSelectedCountry")
+        submitText = "Next"
+    }
+
+    println("CHOSEN COUNTRY ${countryMap[randomFlagKey].toString()}")
+
+    var timerValue by rememberSaveable { mutableFloatStateOf(10f) }
+
     Column(modifier = modifier) {
+        if (isChecked) {
+            LaunchedEffect(randomFlagID)  {
+                while (timerValue > 0 && isButtonsEnabled) {
+                    delay(1000L)
+                    timerValue -= 1f
+
+                    if (timerValue == 0f) {
+                        handleOnSubmit()
+                        isSubmitButtonEnabled = true
+                    }
+                }
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                LinearProgressIndicator(
+                    progress = timerValue / 10f,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(text = timerValue.toString(), modifier = Modifier.padding(start = 20.dp))
+            }
+        }
         if (orientation == 1) {
             Text(
                 text = "Guess the Country!",
@@ -204,17 +251,13 @@ private fun GuessCountryScreen(
         Button(
             onClick = {
                 if (submitText == "Submit") {
-                    correctCountry = countryMap[randomFlagKey].toString()
-                    isButtonsEnabled = false
-                    setIsCorrect =
-                        if (countryMap.entries.find { it.value == userSelectedCountry }?.key == randomFlagKey) " - CORRECT!" else " - WRONG!"
-                    println("USER SELECTED COUNTRY: $userSelectedCountry")
-                    submitText = "Next"
+                    handleOnSubmit()
                 } else {
-                    submitText = "Submit"
-                    isButtonsEnabled = true
-                    isSubmitButtonEnabled = false
                     randomFlagID = 0
+                    timerValue = 10f
+                    isButtonsEnabled = true
+                    submitText = "Submit"
+                    isSubmitButtonEnabled = false
                     setIsCorrect = ""
                     correctCountry = ""
                     userSelectedCountry = "Select a country"

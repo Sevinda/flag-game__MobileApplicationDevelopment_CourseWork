@@ -24,11 +24,6 @@ fun convertJsonStringToMap(jsonString: String): Map<String, String> {
     return map
 }
 
-fun convertMapStringToMap(mapString: String): Map<String, String> {
-    val jsonString = mapString.replace('=', ':')
-    return convertJsonStringToMap(jsonString)
-}
-
 fun addResourcesToList(
     countryMap: Map<String, String>,
     resources: Resources,
