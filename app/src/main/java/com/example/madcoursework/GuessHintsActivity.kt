@@ -17,12 +17,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -40,6 +43,7 @@ import androidx.compose.ui.unit.sp
 import com.example.madcoursework.ui.theme.MADCourseworkTheme
 import com.example.madcoursework.ui.theme.PrimaryBlue
 import com.example.madcoursework.utils.convertJsonStringToMap
+import kotlinx.coroutines.delay
 import kotlin.random.Random
 
 class GuessHintsActivity : ComponentActivity() {
@@ -56,17 +60,20 @@ class GuessHintsActivity : ComponentActivity() {
                     val countryJsonString: String
                     var countryMap: Map<String, String> = emptyMap()
                     var listOfFlagIDs: List<Int> = emptyList()
+                    var isChecked = false
                     if (extras != null) {
                         countryJsonString = extras.getString("countryJsonStringData").toString()
                         countryMap = convertJsonStringToMap(countryJsonString)
                         listOfFlagIDs =
                             extras.getIntegerArrayList("listOfFlagIDsIntentData") as List<Int>
+                        isChecked = extras.getBoolean("isChecked")
                     }
 
                     GuessHintsScreen(
                         modifier = Modifier.padding(horizontal = 20.dp, vertical = 15.dp),
                         countryMap = countryMap,
-                        listOfFlagIDs = listOfFlagIDs
+                        listOfFlagIDs = listOfFlagIDs,
+                        isChecked = isChecked
                     )
                 }
             }
@@ -78,20 +85,22 @@ class GuessHintsActivity : ComponentActivity() {
 private fun GuessHintsScreen(
     modifier: Modifier,
     countryMap: Map<String, String>,
-    listOfFlagIDs: List<Int>
+    listOfFlagIDs: List<Int>,
+    isChecked: Boolean
 ) {
     val orientation = LocalConfiguration.current.orientation
 
     var randomFlagID by rememberSaveable { mutableIntStateOf(0) } // THE RANDOM FLAG ID OF THE RANDOM FLAG
     var randomFlagKey by rememberSaveable { mutableStateOf<String?>(null) } // THE RANDOM FLAG KEY -> i.e. => lk
-
     var randomSelectedCountry by rememberSaveable { mutableStateOf("") }
+
     var blanks by rememberSaveable { mutableStateOf("") }
     var guess by rememberSaveable { mutableStateOf("") }
     var count by rememberSaveable { mutableIntStateOf(1) }
+
     val incorrectGuesses = rememberSaveable { mutableListOf<String>() }
-    var submitText by rememberSaveable { mutableStateOf("Submit") }
     var isSubmitBtnEnabled by rememberSaveable { mutableStateOf(false) }
+    var submitText by rememberSaveable { mutableStateOf("Submit") }
     var setIsCorrect by rememberSaveable { mutableStateOf("") }
 
     // SELECTING A RANDOM IMAGE ONLY IF A RANDOM FLAG HAS NOT BEEN SELECTED YET
@@ -108,11 +117,39 @@ private fun GuessHintsScreen(
         }
     }
 
+    var timerValue by rememberSaveable { mutableFloatStateOf(10f) }
+
     Column(modifier = modifier.fillMaxSize()) {
         Column(
             modifier = Modifier.weight(1f),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            if (isChecked) {
+                LaunchedEffect(randomFlagID) {
+                    while (timerValue > 0 && submitText == "Submit") {
+                        delay(1000L)
+                        timerValue -= 1f
+                    }
+
+                    if (timerValue == 0f) {
+                        val sizeOfArray = incorrectGuesses.size
+                        for (i in 1..(3-sizeOfArray)) {
+                            incorrectGuesses.add("")
+                        }
+                    }
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    LinearProgressIndicator(
+                        progress = timerValue / 10f,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(text = timerValue.toString(), modifier = Modifier.padding(start = 20.dp))
+                }
+            }
             if (orientation == 1) {
                 Text(
                     text = "Guess-Hints!",
@@ -314,11 +351,13 @@ private fun GuessHintsScreen(
                     }
                     guess = ""
                 } else {
+                    timerValue = 10f
                     submitText = "Submit"
                     randomFlagID = 0
                     isSubmitBtnEnabled = false
                     incorrectGuesses.clear()
                     blanks = ""
+                    guess = ""
                     setIsCorrect = ""
                 }
             },
@@ -338,6 +377,7 @@ private fun GuessHintsScreen(
 private fun IncorrectGuesses(incorrectGuess: MutableList<String>) {
     Row {
         for (guess in incorrectGuess) {
+            if (guess == "") continue
             Text(
                 text = guess,
                 modifier = Modifier
