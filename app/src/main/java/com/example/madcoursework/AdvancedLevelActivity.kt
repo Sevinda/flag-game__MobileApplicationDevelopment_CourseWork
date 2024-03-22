@@ -17,12 +17,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -40,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.madcoursework.ui.theme.MADCourseworkTheme
 import com.example.madcoursework.utils.convertJsonStringToMap
+import kotlinx.coroutines.delay
 import kotlin.random.Random
 
 class AdvancedLevelActivity : ComponentActivity() {
@@ -55,17 +59,20 @@ class AdvancedLevelActivity : ComponentActivity() {
                     val countryJsonString: String
                     var countryMap: Map<String, String> = emptyMap()
                     var listOfFlagIDs: List<Int> = emptyList()
+                    var isChecked = false
                     if (extras != null) {
                         countryJsonString = extras.getString("countryJsonStringData").toString()
                         countryMap = convertJsonStringToMap(countryJsonString)
                         listOfFlagIDs =
                             extras.getIntegerArrayList("listOfFlagIDsIntentData") as List<Int>
+                        isChecked = extras.getBoolean("isChecked")
                     }
 
                     AdvancedLevelScreen(
-                        modifier = Modifier.padding(
-                            horizontal = 20.dp, vertical = 15.dp
-                        ), countryMap = countryMap, listOfFlagIDs = listOfFlagIDs
+                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 15.dp),
+                        countryMap = countryMap,
+                        listOfFlagIDs = listOfFlagIDs,
+                        isChecked = isChecked
                     )
                 }
             }
@@ -75,7 +82,10 @@ class AdvancedLevelActivity : ComponentActivity() {
 
 @Composable
 private fun AdvancedLevelScreen(
-    modifier: Modifier, countryMap: Map<String, String>, listOfFlagIDs: List<Int>
+    modifier: Modifier,
+    countryMap: Map<String, String>,
+    listOfFlagIDs: List<Int>,
+    isChecked: Boolean
 ) {
     val orientation = LocalConfiguration.current.orientation
 
@@ -101,7 +111,7 @@ private fun AdvancedLevelScreen(
     val isAnswer2Correct = rememberSaveable { mutableStateOf(false) }
     val isAnswer3Correct = rememberSaveable { mutableStateOf(false) }
 
-    var pointCounter = rememberSaveable { mutableIntStateOf(0) }
+    val pointCounter = rememberSaveable { mutableIntStateOf(0) }
 
     if (randomFlagID1 == 0) {
         var randomIndex1: Int
@@ -132,13 +142,57 @@ private fun AdvancedLevelScreen(
     println("COUNTRY 2 $randomSelectedCountry2")
     println("COUNTRY 3 $randomSelectedCountry3")
 
+    fun handleSubmit() {
+        pointCounter.intValue = 0
+        if (guessCountry1.lowercase() == randomSelectedCountry1.lowercase()) {
+            isAnswer1Correct.value = true
+            pointCounter.intValue += 1
+        }
+        if (guessCountry2.lowercase() == randomSelectedCountry2.lowercase()) {
+            isAnswer2Correct.value = true
+            pointCounter.intValue += 1
+        }
+        if (guessCountry3.lowercase() == randomSelectedCountry3.lowercase()) {
+            isAnswer3Correct.value = true
+            pointCounter.intValue += 1
+        }
+        submitCounter.intValue++
+    }
+
+    var timerValue by rememberSaveable { mutableFloatStateOf(10f) }
+
     Column(
         modifier = modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        if (isChecked) {
+            LaunchedEffect(randomFlagID1) {
+                while (timerValue > 0 && submitCounter.intValue <= 3) {
+                    delay(1000L)
+                    timerValue -= 1f
+
+                    if (timerValue == 0f) {
+                        handleSubmit()
+                        submitText = "Next"
+                        submitCounter.intValue = 4
+                    }
+                }
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                LinearProgressIndicator(
+                    progress = timerValue / 10f,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(text = timerValue.toString(), modifier = Modifier.padding(start = 20.dp))
+            }
+        }
         Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = "Advanced Level",
@@ -219,44 +273,35 @@ private fun AdvancedLevelScreen(
             }
         }
         Box(
-            modifier = Modifier
-                .fillMaxHeight(),
-            contentAlignment = Alignment.BottomCenter
+            modifier = Modifier.fillMaxHeight(), contentAlignment = Alignment.BottomCenter
         ) {
-            if (isAnswer1Correct.value && isAnswer2Correct.value && isAnswer3Correct.value)
-                submitText = "Next"
+            if (isAnswer1Correct.value && isAnswer2Correct.value && isAnswer3Correct.value) submitText =
+                "Next"
             if (submitCounter.intValue > 3) {
                 submitText = "Next"
             }
             Column {
                 if (submitCounter.intValue > 3) {
-                    if (isAnswer1Correct.value && isAnswer2Correct.value && isAnswer3Correct.value)
-                        Text(text = "CORRECT!", color = Color.Green)
-                    else
-                        Text(text = "WRONG!", color = Color.Red)
+                    if (isAnswer1Correct.value && isAnswer2Correct.value && isAnswer3Correct.value) Text(
+                        text = "CORRECT!",
+                        color = Color.Green
+                    )
+                    else Text(text = "WRONG!", color = Color.Red)
+                } else {
+                    Text(
+                        text = "Number of chances left: ${4 - submitCounter.intValue}",
+                    )
                 }
 
                 Button(
                     onClick = {
                         if (submitText == "Submit") {
-                            pointCounter.intValue = 0
-                            if (guessCountry1.lowercase() == randomSelectedCountry1.lowercase()) {
-                                isAnswer1Correct.value = true
-                                pointCounter.intValue += 1
-                            }
-                            if (guessCountry2.lowercase() == randomSelectedCountry2.lowercase()) {
-                                isAnswer2Correct.value = true
-                                pointCounter.intValue += 1
-                            }
-                            if (guessCountry3.lowercase() == randomSelectedCountry3.lowercase()) {
-                                isAnswer3Correct.value = true
-                                pointCounter.intValue += 1
-                            }
-                            submitCounter.intValue++
+                            handleSubmit()
                         } else {
                             submitCounter.intValue = 1
                             pointCounter.intValue = 0
                             submitText = "Submit"
+                            timerValue = 10f
                             randomFlagID1 = 0
 
                             guessCountry1 = ""
@@ -293,9 +338,8 @@ private fun FlagContainer(
     if (submitCounter == 1) isEnabled = true
 
     if (submitCounter > 1) {
-        textFieldColor =
-            if (isAnswerCorrect) Color.Green
-            else Color.Red
+        textFieldColor = if (isAnswerCorrect) Color.Green
+        else Color.Red
     }
 
     if (isAnswerCorrect) isEnabled = false
@@ -317,8 +361,10 @@ private fun FlagContainer(
         Text(
             text = guess, modifier = Modifier.padding(vertical = 10.dp)
         )
-        if (submitCounter > 3 && !isAnswerCorrect)
-            Text(text = correctAnswer, color = Color(0xFF2196F3))
+        if (submitCounter > 3 && !isAnswerCorrect) Text(
+            text = correctAnswer,
+            color = Color(0xFF2196F3)
+        )
         TextField(
             value = guess,
             onValueChange = {
@@ -328,8 +374,7 @@ private fun FlagContainer(
             modifier = Modifier.padding(bottom = 30.dp),
             enabled = isEnabled,
             textStyle = TextStyle(
-                fontSize = 18.sp,
-                color = textFieldColor
+                fontSize = 18.sp, color = textFieldColor
             )
         )
     } else {
@@ -351,8 +396,10 @@ private fun FlagContainer(
                 Text(
                     text = guess, modifier = Modifier.padding(vertical = 10.dp)
                 )
-                if (submitCounter > 3 && !isAnswerCorrect)
-                    Text(text = correctAnswer, color = Color(0xFF2196F3))
+                if (submitCounter > 3 && !isAnswerCorrect) Text(
+                    text = correctAnswer,
+                    color = Color(0xFF2196F3)
+                )
                 TextField(
                     value = guess,
                     onValueChange = {
@@ -362,8 +409,7 @@ private fun FlagContainer(
                     modifier = Modifier.padding(bottom = 30.dp),
                     enabled = isEnabled,
                     textStyle = TextStyle(
-                        fontSize = 18.sp,
-                        color = textFieldColor
+                        fontSize = 18.sp, color = textFieldColor
                     )
                 )
             }

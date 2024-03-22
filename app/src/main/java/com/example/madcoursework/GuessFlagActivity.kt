@@ -18,11 +18,14 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -41,6 +44,7 @@ import com.example.madcoursework.ui.theme.MADCourseworkTheme
 import com.example.madcoursework.ui.theme.MCQButtonDark
 import com.example.madcoursework.ui.theme.MCQButtonLight
 import com.example.madcoursework.utils.convertJsonStringToMap
+import kotlinx.coroutines.delay
 import kotlin.random.Random
 
 class GuessFlagActivity : ComponentActivity() {
@@ -55,11 +59,13 @@ class GuessFlagActivity : ComponentActivity() {
                     val countryJsonString: String
                     var countryMap: Map<String, String> = emptyMap()
                     var listOfFlagIDs: List<Int> = emptyList()
+                    var isChecked = false
                     if (extras != null) {
                         countryJsonString = extras.getString("countryJsonStringData").toString()
                         countryMap = convertJsonStringToMap(countryJsonString)
                         listOfFlagIDs =
                             extras.getIntegerArrayList("listOfFlagIDsIntentData") as List<Int>
+                        isChecked = extras.getBoolean("isChecked")
                     }
 
                     GuessFlagScreen(
@@ -68,7 +74,8 @@ class GuessFlagActivity : ComponentActivity() {
                             vertical = 15.dp
                         ),
                         countryMap = countryMap,
-                        listOfFlagIDs = listOfFlagIDs
+                        listOfFlagIDs = listOfFlagIDs,
+                        isChecked = isChecked
                     )
                 }
             }
@@ -80,17 +87,19 @@ class GuessFlagActivity : ComponentActivity() {
 private fun GuessFlagScreen(
     modifier: Modifier,
     countryMap: Map<String, String>,
-    listOfFlagIDs: List<Int>
+    listOfFlagIDs: List<Int>,
+    isChecked: Boolean
 ) {
     val orientation = LocalConfiguration.current.orientation
 
     var randomFlagID by rememberSaveable { mutableIntStateOf(0) } // THE RANDOM FLAG ID OF THE RANDOM FLAG
     var randomFlagKey by rememberSaveable { mutableStateOf<String?>(null) } // THE RANDOM FLAG KEY -> i.e. => lk
+    var randomSelectedCountry by rememberSaveable { mutableStateOf("") }
 
     var setIsCorrect by rememberSaveable { mutableStateOf("") }
-    var randomSelectedCountry by rememberSaveable { mutableStateOf("") }
     val flagList = rememberSaveable { mutableListOf<Int>() }
     val selectedOption = rememberSaveable { mutableStateOf("") }
+
     val submitText by rememberSaveable { mutableStateOf("Next") }
     var correctIndex by rememberSaveable { mutableIntStateOf(0) }
     var submitButtonNext by rememberSaveable { mutableStateOf(true) }
@@ -117,11 +126,46 @@ private fun GuessFlagScreen(
         correctIndex = flagList.indexOf(randomFlagID)
     }
 
+    var timerValue by rememberSaveable { mutableFloatStateOf(10f) }
+
     Column(
         modifier = modifier
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        if (isChecked) {
+            LaunchedEffect(randomFlagID) {
+                while (timerValue > 0 && setIsCorrect == "") {
+                    delay(1000L)
+                    timerValue -= 1f
+
+                    if (timerValue == 0f) {
+                        if (selectedOption.value != "") {
+                            setIsCorrect =
+                                if (flagList[selectedOption.value.toInt() - 1] == randomFlagID) " - CORRECT!" else " - WRONG!"
+                        } else {
+                            selectedOption.value = " "
+                            setIsCorrect = " - WRONG!"
+                        }
+                        submitButtonNext = false
+
+                        actualAnswer = "Correct option was option number: ${correctIndex + 1}"
+                    }
+                }
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                LinearProgressIndicator(
+                    progress = timerValue / 10f,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(text = timerValue.toString(), modifier = Modifier.padding(start = 20.dp))
+            }
+        }
         Text(
             text = "Guess the Flag",
             fontSize = 24.sp,
@@ -196,7 +240,7 @@ private fun GuessFlagScreen(
                 }
                 Button(
                     onClick = {
-                        if (submitButtonNext) {
+                        if (selectedOption.value != "" && setIsCorrect == "") {
                             setIsCorrect =
                                 if (flagList[selectedOption.value.toInt() - 1] == randomFlagID) " - CORRECT!" else " - WRONG!"
                             submitButtonNext = false
@@ -208,6 +252,7 @@ private fun GuessFlagScreen(
                             randomFlagID = 0
                             actualAnswer = ""
                             submitButtonNext = true
+                            timerValue = 10f
                         }
                     },
                     enabled = selectedOption.value != "",
