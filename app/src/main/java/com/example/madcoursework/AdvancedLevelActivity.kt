@@ -46,7 +46,7 @@ import com.example.madcoursework.utils.convertJsonStringToMap
 import kotlinx.coroutines.delay
 import kotlin.random.Random
 
-// This is the advanced level activity
+// This is the advanced level activity comment
 
 class AdvancedLevelActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
