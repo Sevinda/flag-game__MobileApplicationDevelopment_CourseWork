@@ -1,7 +1,5 @@
 package com.example.madcoursework
 
-// COURSEWORK
-
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -42,12 +40,13 @@ class MainActivity : ComponentActivity() {
             MADCourseworkTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
-                    modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
                 ) {
                     MainScreen(
                         modifier = Modifier.padding(
-                            horizontal = 20.dp, vertical = 15.dp
-                        )
+                                horizontal = 20.dp, vertical = 15.dp
+                            )
                     )
                 }
             }
@@ -70,15 +69,14 @@ private fun MainScreen(modifier: Modifier) {
     ) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = "Select a game to play", fontSize = 28.sp, fontWeight = FontWeight.Bold,
+                text = "Select a game to play",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
                 modifier = Modifier.weight(1f)
             )
-            Switch(
-                checked = checked,
-                onCheckedChange = {
-                    checked = it
-                }
-            )
+            Switch(checked = checked, onCheckedChange = {
+                checked = it
+            })
         }
 
         CustomButton(
@@ -127,11 +125,13 @@ private fun CustomButton(
 ) {
     val context = LocalContext.current
     Button(
-        onClick = { chooseActivity(index, context, countryJsonString, listOfFlagIDsIntent, isChecked) },
-        modifier = modifier
+        onClick = {
+            chooseActivity(
+                index, context, countryJsonString, listOfFlagIDsIntent, isChecked
+            )
+        }, modifier = modifier
             .fillMaxWidth()
-            .height(50.dp),
-        shape = RoundedCornerShape(12.dp)
+            .height(50.dp), shape = RoundedCornerShape(12.dp)
     ) {
         Text(text = text, fontSize = 18.sp)
     }
@@ -188,8 +188,7 @@ private fun changeActivity(
 ) {
     val intent = Intent(context, newActivity)
     intent.putIntegerArrayListExtra(
-        "listOfFlagIDsIntentData",
-        listOfFlagIDsIntent as ArrayList<Int>
+        "listOfFlagIDsIntentData", listOfFlagIDsIntent as ArrayList<Int>
     )
     intent.putExtra("countryJsonStringData", countryJsonString)
     intent.putExtra("isChecked", isChecked)

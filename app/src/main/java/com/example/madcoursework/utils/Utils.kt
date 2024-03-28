@@ -24,6 +24,7 @@ fun convertJsonStringToMap(jsonString: String): Map<String, String> {
     return map
 }
 
+// ADD IMAGES INTO A LIST IN THE FORM OF RESOURCES
 fun addResourcesToList(
     countryMap: Map<String, String>,
     resources: Resources,

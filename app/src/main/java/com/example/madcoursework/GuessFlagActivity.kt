@@ -94,16 +94,16 @@ private fun GuessFlagScreen(
 
     var randomFlagID by rememberSaveable { mutableIntStateOf(0) } // THE RANDOM FLAG ID OF THE RANDOM FLAG
     var randomFlagKey by rememberSaveable { mutableStateOf<String?>(null) } // THE RANDOM FLAG KEY -> i.e. => lk
-    var randomSelectedCountry by rememberSaveable { mutableStateOf("") }
+    var randomSelectedCountry by rememberSaveable { mutableStateOf("") } // CORRECT RANDOM FLAG
 
     var setIsCorrect by rememberSaveable { mutableStateOf("") }
-    val flagList = rememberSaveable { mutableListOf<Int>() }
+    val flagList = rememberSaveable { mutableListOf<Int>() } // FLAG LIST TO STORE ALL THE FLAGS
     val selectedOption = rememberSaveable { mutableStateOf("") }
 
     val submitText by rememberSaveable { mutableStateOf("Next") }
     var correctIndex by rememberSaveable { mutableIntStateOf(0) }
     var submitButtonNext by rememberSaveable { mutableStateOf(true) }
-    var actualAnswer by rememberSaveable { mutableStateOf("") }
+    var actualAnswer by rememberSaveable { mutableStateOf("") } // AFTER SUBMIT TEXT THE RESULT THAT POPS UP
 
     if (randomFlagID == 0) {
         val randomIndex = Random.nextInt(listOfFlagIDs.size)
@@ -122,7 +122,7 @@ private fun GuessFlagScreen(
                 break
         }
         val flagsToAdd = listOf(randomFlagID, wrongRandomFlag1, wrongRandomFlag2)
-        flagList.addAll(flagsToAdd.shuffled())
+        flagList.addAll(flagsToAdd.shuffled()) // SHUFFLING AND ADDING THE FLAGS INTO THE LIST
         correctIndex = flagList.indexOf(randomFlagID)
     }
 

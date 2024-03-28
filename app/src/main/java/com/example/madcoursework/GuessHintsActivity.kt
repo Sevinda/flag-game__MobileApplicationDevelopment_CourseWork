@@ -92,11 +92,11 @@ private fun GuessHintsScreen(
 
     var randomFlagID by rememberSaveable { mutableIntStateOf(0) } // THE RANDOM FLAG ID OF THE RANDOM FLAG
     var randomFlagKey by rememberSaveable { mutableStateOf<String?>(null) } // THE RANDOM FLAG KEY -> i.e. => lk
-    var randomSelectedCountry by rememberSaveable { mutableStateOf("") }
+    var randomSelectedCountry by rememberSaveable { mutableStateOf("") } // THE CORRECT ANSWER
 
-    var blanks by rememberSaveable { mutableStateOf("") }
-    var guess by rememberSaveable { mutableStateOf("") }
-    var count by rememberSaveable { mutableIntStateOf(1) }
+    var blanks by rememberSaveable { mutableStateOf("") } // TO ASSIGN THE NUMBER OF BLANKS
+    var guess by rememberSaveable { mutableStateOf("") } // GUESS OF THE USER
+    var count by rememberSaveable { mutableIntStateOf(1) } // ONLY 3 TIMES THE USER CAN PUT WRONG ANSWERS
 
     val incorrectGuesses = rememberSaveable { mutableListOf<String>() }
     var isSubmitBtnEnabled by rememberSaveable { mutableStateOf(false) }
@@ -133,7 +133,7 @@ private fun GuessHintsScreen(
 
                     if (timerValue == 0f) {
                         val sizeOfArray = incorrectGuesses.size
-                        for (i in 1..(3-sizeOfArray)) {
+                        for (i in 1..(3 - sizeOfArray)) {
                             incorrectGuesses.add("")
                         }
                     }
