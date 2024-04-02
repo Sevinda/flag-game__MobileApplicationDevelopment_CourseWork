@@ -58,6 +58,7 @@ class MainActivity : ComponentActivity() {
 private fun MainScreen(modifier: Modifier) {
     val resources = LocalContext.current.resources
 
+    // CALLING THE FUNCTIONS IN THE UTIL FOLDER
     val countryJsonString = readJsonFromAssets(LocalContext.current, "countries.json")
     val countryMap = convertJsonStringToMap(countryJsonString)
     val listOfFlagIDs = addResourcesToList(countryMap, resources, LocalContext.current.packageName)
@@ -114,6 +115,7 @@ private fun MainScreen(modifier: Modifier) {
     }
 }
 
+// CUSTOM BUTTON FOR ALL THE 4 SAME BUTTONS
 @Composable
 private fun CustomButton(
     text: String,

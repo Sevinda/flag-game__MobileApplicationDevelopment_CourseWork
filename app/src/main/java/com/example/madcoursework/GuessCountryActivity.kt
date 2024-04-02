@@ -58,7 +58,9 @@ class GuessCountryActivity : ComponentActivity() {
                     val countryJsonString: String
                     var countryMap: Map<String, String> = emptyMap()
                     var listOfFlagIDs: List<Int> = emptyList()
+
                     var isChecked = false
+
                     if (extras != null) {
                         countryJsonString = extras.getString("countryJsonStringData").toString()
                         countryMap = convertJsonStringToMap(countryJsonString)
@@ -66,6 +68,7 @@ class GuessCountryActivity : ComponentActivity() {
                             extras.getIntegerArrayList("listOfFlagIDsIntentData") as List<Int>
                         isChecked = extras.getBoolean("isChecked")
                     }
+
                     GuessCountryScreen(
                         modifier = Modifier.padding(
                             horizontal = 20.dp, vertical = 5.dp
@@ -121,6 +124,7 @@ private fun GuessCountryScreen(
     var timerValue by rememberSaveable { mutableFloatStateOf(10f) }
 
     Column(modifier = modifier) {
+        // REFERENCE (ANDROID) => https://developer.android.com/develop/ui/compose/side-effects
         if (isChecked) {
             LaunchedEffect(randomFlagID)  {
                 while (timerValue > 0 && isButtonsEnabled) {
@@ -139,6 +143,7 @@ private fun GuessCountryScreen(
                     .fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // REFERENCES (STACK OVERFLOW) => https://developer.android.com/reference/com/google/android/material/progressindicator/LinearProgressIndicator
                 LinearProgressIndicator(
                     progress = timerValue / 10f,
                     modifier = Modifier.weight(1f)

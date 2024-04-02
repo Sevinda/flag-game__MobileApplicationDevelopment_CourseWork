@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -59,7 +58,9 @@ class AdvancedLevelActivity : ComponentActivity() {
                     val countryJsonString: String
                     var countryMap: Map<String, String> = emptyMap()
                     var listOfFlagIDs: List<Int> = emptyList()
+
                     var isChecked = false
+
                     if (extras != null) {
                         countryJsonString = extras.getString("countryJsonStringData").toString()
                         countryMap = convertJsonStringToMap(countryJsonString)
@@ -164,6 +165,7 @@ private fun AdvancedLevelScreen(
     Column(
         modifier = modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // REFERENCE (ANDROID) => https://developer.android.com/develop/ui/compose/side-effects
         if (isChecked) {
             LaunchedEffect(randomFlagID1) {
                 while (timerValue > 0 && submitCounter.intValue <= 3) {

@@ -5,6 +5,7 @@ import android.content.res.Resources
 import org.json.JSONObject
 
 // READING THE JSON FILE WHICH IS IN THE ASSETS FOLDER
+// REFERENCE (STACK OVERFLOW) => https://stackoverflow.com/questions/56962608/how-to-read-json-file-from-assests-in-android-using-kotlin
 fun readJsonFromAssets(context: Context, fileName: String): String {
     val inputStream = context.assets.open(fileName)
     val bufferReader = inputStream.bufferedReader()
@@ -25,6 +26,7 @@ fun convertJsonStringToMap(jsonString: String): Map<String, String> {
 }
 
 // ADD IMAGES INTO A LIST IN THE FORM OF RESOURCES
+// REFERENCE (STACK OVERFLOW) => https://stackoverflow.com/questions/3476430/how-to-get-a-resource-id-with-a-known-resource-name
 fun addResourcesToList(
     countryMap: Map<String, String>,
     resources: Resources,

@@ -60,7 +60,9 @@ class GuessHintsActivity : ComponentActivity() {
                     val countryJsonString: String
                     var countryMap: Map<String, String> = emptyMap()
                     var listOfFlagIDs: List<Int> = emptyList()
+
                     var isChecked = false
+
                     if (extras != null) {
                         countryJsonString = extras.getString("countryJsonStringData").toString()
                         countryMap = convertJsonStringToMap(countryJsonString)
@@ -124,6 +126,7 @@ private fun GuessHintsScreen(
             modifier = Modifier.weight(1f),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // REFERENCE (ANDROID) => https://developer.android.com/develop/ui/compose/side-effects
             if (isChecked) {
                 LaunchedEffect(randomFlagID) {
                     while (timerValue > 0 && submitText == "Submit") {
